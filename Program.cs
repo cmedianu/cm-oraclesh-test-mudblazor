@@ -1,11 +1,18 @@
+using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using SH.Components;
+//using SH.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
 
+// Add Entity Framework Core services
+/*builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseOracle(builder.Configuration.GetConnectionString("OracleSH"),
+    providerOptions => providerOptions.UseOracleSQLCompatibility("11")));
+*/
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
