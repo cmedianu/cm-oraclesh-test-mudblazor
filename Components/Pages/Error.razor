@@ -1,28 +1,69 @@
 ﻿@page "/Error"
 @using System.Diagnostics
+@using SH.Components.Shared
+@inject NavigationManager NavigationManager
 
 <PageTitle>Error</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudCard Elevation="25" Class="rounded-lg">
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudText Typo="Typo.h4" Color="Color.Error">Error Occurred</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.ErrorOutline" Class="my-4">
+                An error occurred while processing your request
+            </MudAlert>
+            
+            @if (Exception != null)
+            {
+                <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                    <MudTabPanel Text="Error Message">
+                        <MudPaper Elevation="0" Class="pa-4 mud-background-gray rounded-lg">
+                            <MudText Typo="Typo.h6"><b>Exception Type:</b></MudText>
+                            <MudText Color="Color.Error" Class="mb-4" Typo="Typo.body1">@Exception.GetType().FullName</MudText>
+                            
+                            <MudText Typo="Typo.h6"><b>Message:</b></MudText>
+                            <MudText Color="Color.Error" Class="mb-4" Typo="Typo.body1">@Exception.Message</MudText>
+                            
+                            <MudText Typo="Typo.h6"><b>Source:</b></MudText>
+                            <MudText Class="mb-4" Typo="Typo.body1">@Exception.Source</MudText>
+                        </MudPaper>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Stack Trace">
+                        <MudPaper Elevation="0" Class="pa-4 mud-background-gray rounded-lg" Style="overflow-x: auto;">
+                            <MudText Typo="Typo.h6" Class="mb-2"><b>Stack Trace:</b></MudText>
+                            <pre style="white-space: pre-wrap; font-family: monospace; font-size: 14px; color: #c62828;">@Exception.StackTrace</pre>
+                        </MudPaper>
+                    </MudTabPanel>
+                </MudTabs>
+            }
+            else
+            {
+                <MudPaper Elevation="0" Class="pa-4 mud-background-gray rounded-lg">
+                    <MudText Typo="Typo.body1"><b>Details:</b></MudText>
+                    <MudDivider Class="my-2" />
+                    <MudText Color="Color.Error" Typo="Typo.body2">
+                        No exception details available. This could be due to the page being accessed directly 
+                        rather than through an error redirection.
+                    </MudText>
+                </MudPaper>
+            }
 
-@if (ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
-    </p>
-}
-
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+            @if (ShowRequestId)
+            {
+                <MudText Typo="Typo.caption" Class="mt-4">
+                    <b>Request ID:</b> <code>@RequestId</code>
+                </MudText>
+            }
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoHome" FullWidth="true">Return to Home</MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
 
 @code{
     [CascadingParameter]
@@ -30,7 +71,20 @@
 
     private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+    private Exception? Exception { get; set; }
 
-    protected override void OnInitialized() =>
+    protected override void OnInitialized()
+    {
         RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+        
+        // Get the exception from the static property
+        Exception = CustomErrorBoundary.LastException;
+    }
+
+    private void GoHome()
+    {
+        // Clear the exception when navigating away
+        CustomErrorBoundary.LastException = null;
+        NavigationManager.NavigateTo("/");
+    }
 }

@@ -1,0 +1,23 @@
+@inherits ErrorBoundary
+
+<CascadingValue Value="this">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Inject] 
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    // Static property to hold the last exception
+    public static Exception? LastException { get; set; }
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        // Store the exception directly in a static property
+        LastException = exception;
+        
+        // Navigate to error page without query parameters
+        NavigationManager.NavigateTo("/Error");
+        return Task.CompletedTask;
+    }
+}
