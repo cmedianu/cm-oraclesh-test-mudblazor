@@ -4,7 +4,6 @@ obj/
 
 # IDE directories
 .idea/
-.vscode/
 
 # Visual Studio files
 .vs/
