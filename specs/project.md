@@ -14,6 +14,7 @@ Generate the application **one step at a time**, in the following **dependency-a
 
 - Generate the following:
   - `Customer.cs`  `Sale.cs` and `Country.cs` entity classes from oracle-inspector metadata.
+  - All entity properties must be annotated with `[Column]` , `[Table]`, etc. attributes matching the Oracle column and table names, as discovered via oracle-inspector, for all relevant tables.
   - `AppDbContext` with proper `DbSet<Customer>` and `DbSet<Sale>`.
   - Auto-registration of `AppDbContext` as **Scoped**, no connection pooling.
 

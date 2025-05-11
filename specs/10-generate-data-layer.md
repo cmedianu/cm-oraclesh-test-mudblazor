@@ -11,6 +11,7 @@ Implement the foundational data layer for the application, targeting the Oracle 
      - `Sale` (from SH.SALES)
      - `Country` (from SH.COUNTRIES)
    - Properties must match the Oracle schema (types, nullability, keys).
+   - All entity properties must be annotated with `[Column]` attributes matching the Oracle column names, as discovered via oracle-inspector, for all relevant tables.
    - Add navigation properties where appropriate (e.g., Customer → Sales, Sale → Customer, Customer → Country).
 
 2. **DbContext**
