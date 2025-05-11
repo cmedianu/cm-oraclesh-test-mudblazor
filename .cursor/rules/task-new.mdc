@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- Read the project documentation from ./specs/project.md
+- create a specification for the task below and save it in ./specs in a file named <Number>-<Topic>.md. we are aiming to number tasks 10,20, etc. 
+- *Do not execute the specification*, just create the md in ./specs

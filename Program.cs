@@ -9,10 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMudServices();
 
 // Add Entity Framework Core services
-/*builder.Services.AddDbContext<AppDbContext>(options =>
+/*
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("OracleSH"),
-    providerOptions => providerOptions.UseOracleSQLCompatibility("11")));
+    providerOptions => providerOptions.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19)));
 */
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
