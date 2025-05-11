@@ -1,5 +1,6 @@
 ﻿@page "/Error"
 @using System.Diagnostics
+@using Microsoft.AspNetCore.Http
 @using SH.Components.Shared
 @inject NavigationManager NavigationManager
 
@@ -67,11 +68,11 @@
 
 @code{
     [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; }
 
-    private string? RequestId { get; set; }
+    private string RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    private Exception? Exception { get; set; }
+    private Exception Exception { get; set; }
 
     protected override void OnInitialized()
     {

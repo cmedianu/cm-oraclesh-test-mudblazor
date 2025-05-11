@@ -13,9 +13,9 @@
 
     private void IncrementCount()
     {
-        string x = "test";
-        x.Substring(1);
         throw new Exception("test");
+#pragma warning disable CS0162 // Unreachable code detected
         currentCount++;
+#pragma warning restore CS0162 // Unreachable code detected
     }
 }

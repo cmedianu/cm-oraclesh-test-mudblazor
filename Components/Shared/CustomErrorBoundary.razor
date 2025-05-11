@@ -9,7 +9,7 @@
     private NavigationManager NavigationManager { get; set; } = default!;
 
     // Static property to hold the last exception
-    public static Exception? LastException { get; set; }
+    public static Exception LastException { get; set; }
 
     protected override Task OnErrorAsync(Exception exception)
     {
