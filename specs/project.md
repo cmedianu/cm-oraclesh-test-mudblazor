@@ -21,6 +21,17 @@ Generate the application **one step at a time**, in the following **dependency-a
 
 ---
 
+### STEP 1.5: Entity Tests for Data Layer
+
+- Implement unit tests for the foundational entities (`Customer`, `Sale`, `Country`) to verify correct mapping and foreign key relationships.
+- Use `xUnit` and `FluentAssertions` for testing.
+- Tests should cover basic selects and navigation properties and use the inMemory database provider for `InMemoryAppDbContextTests`.
+- Additional tests should only do selects and connect to Oracle. (e.g., `SELECT * FROM CUSTOMERS WHERE ROWNUM < 10`). `OracleAppDbContextTests`
+
+🟢 After step 1.5, prompt for feedback and validation before proceeding to the next step.
+
+---
+
 ### STEP 2: Customer Feature Slice
 
 - Create the **Customer** vertical slice:
