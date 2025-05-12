@@ -3,4 +3,5 @@ description:
 globs: 
 alwaysApply: false
 ---
-Execute the specified task, but *nothing* else in adition, just the task
+- Execute the specified task, but *nothing* else in adition, just the task. 
+- Check for sucessful compilation
