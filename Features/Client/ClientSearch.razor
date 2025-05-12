@@ -10,60 +10,82 @@
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/clients/edit/new"))">New Client</MudButton>
     <MudTextField @bind-Value="searchTerm" Placeholder="Search..." Class="mb-4 mt-4" Immediate="true" />
     <div class="always-show-scrollbar">
-        <MudTable ServerData="@(LoadServerData)" SortLabel="Sort by" pageSizeOptions="new int[] { 10, 20, 50 }" TotalItems="totalItems" Class="mt-4" Hover="true">
-            <HeaderContent>
-                <MudTh>Id</MudTh>
-                <MudTh>First Name</MudTh>
-                <MudTh>Last Name</MudTh>
-                <MudTh>Gender</MudTh>
-                <MudTh>Year of Birth</MudTh>
-                <MudTh>Marital Status</MudTh>
-                <MudTh>City</MudTh>
-                <MudTh>State/Province</MudTh>
-                <MudTh>Country</MudTh>
-                <MudTh>Email</MudTh>
-                <MudTh>Phone</MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Id">@context.CustId</MudTd>
-                <MudTd DataLabel="First Name">@context.CustFirstName</MudTd>
-                <MudTd DataLabel="Last Name">@context.CustLastName</MudTd>
-                <MudTd DataLabel="Gender">@context.CustGender</MudTd>
-                <MudTd DataLabel="Year of Birth">@context.CustYearOfBirth</MudTd>
-                <MudTd DataLabel="Marital Status">@context.CustMaritalStatus</MudTd>
-                <MudTd DataLabel="City">@context.CustCity</MudTd>
-                <MudTd DataLabel="State/Province">@context.CustStateProvince</MudTd>
-                <MudTd DataLabel="Country">@context.CountryName</MudTd>
-                <MudTd DataLabel="Email">@context.CustEmail</MudTd>
-                <MudTd DataLabel="Phone">@context.CustMainPhoneNumber</MudTd>
-            </RowTemplate>
-        </MudTable>
+        <MudDataGrid T="ClientDto"
+                     ServerData="LoadServerData"
+                     RowsPerPage="10"
+                     Class="mt-4"
+                     Loading="@loading"
+                     RowClick="OnRowClick"
+                     Filterable="false"
+                     SortMode="SortMode.Single"
+                     Dense="true">
+            <Columns>
+                <PropertyColumn Property="x => x.CustId" Title="Id" Sortable="true" />
+                <PropertyColumn Property="x => x.CustFirstName" Title="First Name" Sortable="true" />
+                <PropertyColumn Property="x => x.CustLastName" Title="Last Name" Sortable="true" />
+                <PropertyColumn Property="x => x.CustGender" Title="Gender" Sortable="true" />
+                <PropertyColumn Property="x => x.CustYearOfBirth" Title="Year of Birth" Sortable="true" />
+                <PropertyColumn Property="x => x.CustMaritalStatus" Title="Marital Status" Sortable="true" />
+                <PropertyColumn Property="x => x.CustCity" Title="City" Sortable="true" />
+                <PropertyColumn Property="x => x.CustStateProvince" Title="State/Province" Sortable="true" />
+                <PropertyColumn Property="x => x.CountryName" Title="Country" Sortable="true" />
+                <PropertyColumn Property="x => x.CustEmail" Title="Email" Sortable="true" />
+                <PropertyColumn Property="x => x.CustMainPhoneNumber" Title="Phone" Sortable="true" />
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="ClientDto" PageSizeOptions="new int[] { 10, 20, 50, 100 }" />
+            </PagerContent>
+            <NoRecordsContent>
+                <MudText Typo="Typo.body1">No clients found.</MudText>
+            </NoRecordsContent>
+        </MudDataGrid>
     </div>
 </MudPaper>
 
 @code {
-    private List<ClientDto> pagedClients = new();
-    private int totalItems;
-    private int pageSize = 10;
-    private int currentPage = 0;
-    private bool loading = false;
     private string searchTerm = string.Empty;
+    private bool loading = false;
 
-    //TODO Do something with the token
-    private async Task<TableData<ClientDto>> LoadServerData(TableState state, CancellationToken token)
+    private async Task<GridData<ClientDto>> LoadServerData(GridState<ClientDto> state)
     {
         loading = true;
-        var sort = state.SortLabel ?? "CustId";
-        var sortDesc = state.SortDirection == SortDirection.Descending;
+        var sort = "CustId";
+        var sortDesc = false;
+        var firstSort = state.SortDefinitions?.FirstOrDefault();
+        if (firstSort != null)
+        {
+            // Use Field property if available, otherwise fallback to parsing
+            var fieldProp = firstSort.GetType().GetProperty("SortBy");
+            if (fieldProp != null)
+            {
+                var fieldValue = fieldProp.GetValue(firstSort) as string;
+                if (!string.IsNullOrEmpty(fieldValue))
+                    sort = fieldValue;
+            }
+            else
+            {
+                var expr = firstSort.ToString();
+                if (!string.IsNullOrEmpty(expr) && expr.Contains("=>"))
+                {
+                    var parts = expr.Split("=>");
+                    if (parts.Length == 2)
+                    {
+                        var propPart = parts[1].Trim(); // "x.CustFirstName"
+                        var dotIdx = propPart.IndexOf('.');
+                        if (dotIdx >= 0 && dotIdx < propPart.Length - 1)
+                            sort = propPart.Substring(dotIdx + 1);
+                    }
+                }
+            }
+            sortDesc = firstSort.Descending;
+        }
         var filters = new Dictionary<string, string>();
         var result = await ClientService.GetClientsAsync(state.Page + 1, state.PageSize, searchTerm, sort, sortDesc, filters);
-        pagedClients = result.Items.ToList();
-        totalItems = result.TotalCount;
         loading = false;
-        return new TableData<ClientDto> { Items = pagedClients, TotalItems = totalItems };
+        return new GridData<ClientDto> { Items = result.Items.ToList(), TotalItems = result.TotalCount };
     }
 
-    private void OnRowClick(TableRowClickEventArgs<ClientDto> args)
+    private void OnRowClick(DataGridRowClickEventArgs<ClientDto> args)
     {
         Navigation.NavigateTo($"/clients/edit/{args.Item.CustId}");
     }

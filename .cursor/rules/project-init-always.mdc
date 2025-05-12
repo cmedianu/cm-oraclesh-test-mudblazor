@@ -5,9 +5,9 @@ alwaysApply: true
 ---
 # Directory Structure:
 - ./specs - contains project specifications
-- ./specs/project.md - contains the overarching specification for the project. It is used to create detailed specifications.
-- ./specs/<number>-<subject>.md - mini tasks we are working on. Created by AI at user request from project.md, implemented one by one
+- ./specs/project.md - contains the overarching specification for the project. It is used to create detailed specifications. We call this the *Master Spec*
+- ./specs/<number>-<subject>.md - mini tasks we are working on. Created by AI at user request from project.md, implemented one by one. Number increases by tens, to the next multiple of 10 at least 10 higher. We call these *Minispecs*. DO NOT REPEAT NUMBERS
 - ./ai_docs/ - potentially contains API documentation.
 
-# Don't just go ahead implememnting - ./specs/project.md - wait for user to specifically request implementation of mini tasks
+# Don't just go ahead implememnting - ./specs/project.md - wait for user to specifically request implementation of mini specs
 

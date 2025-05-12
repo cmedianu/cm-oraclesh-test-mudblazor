@@ -23,7 +23,7 @@ namespace Features.Client
         public async Task<(IEnumerable<ClientDto> Items, int TotalCount)>
             GetClientsAsync(int page, int pageSize, string search, string sortColumn, bool sortDesc, Dictionary<string, string> filters)
         {
-            var query = _db.Customers.Include(c => c.Country).AsQueryable();
+                var query = _db.Customers.Include(c => c.Country).AsQueryable();
 
             // Filtering
             if (!string.IsNullOrWhiteSpace(search))
@@ -58,6 +58,11 @@ namespace Features.Client
                 "CustLastName" => sortDesc ? query.OrderByDescending(c => c.CustLastName) : query.OrderBy(c => c.CustLastName),
                 "CustYearOfBirth" => sortDesc ? query.OrderByDescending(c => c.CustYearOfBirth) : query.OrderBy(c => c.CustYearOfBirth),
                 "CustCity" => sortDesc ? query.OrderByDescending(c => c.CustCity) : query.OrderBy(c => c.CustCity),
+                "CustGender" => sortDesc ? query.OrderByDescending(c => c.CustGender) : query.OrderBy(c => c.CustGender),
+                "CustMaritalStatus" => sortDesc ? query.OrderByDescending(c => c.CustMaritalStatus) : query.OrderBy(c => c.CustMaritalStatus),
+                "CustStateProvince" => sortDesc ? query.OrderByDescending(c => c.CustStateProvince) : query.OrderBy(c => c.CustStateProvince),
+                "CountryName" => sortDesc ? query.OrderByDescending(c => c.Country.CountryName) : query.OrderBy(c => c.Country.CountryName),
+                "CustEmail" => sortDesc ? query.OrderByDescending(c => c.CustEmail) : query.OrderBy(c => c.CustEmail),
                 _ => query.OrderBy(c => c.CustId)
             };
 
