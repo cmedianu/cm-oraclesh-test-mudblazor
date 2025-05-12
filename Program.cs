@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AutoMapper;
+using Serilog;
+using System.IO;
 
 //using SH.Data;
 
@@ -26,6 +28,21 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddAutoMapper(typeof(Features.Client.ClientProfile));
 builder.Services.AddScoped<Features.Client.ClientService>();
+
+// Ensure ./logs directory exists
+var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+if (!Directory.Exists(logDir))
+{
+    Directory.CreateDirectory(logDir);
+}
+
+// Configure Serilog from appsettings
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 
