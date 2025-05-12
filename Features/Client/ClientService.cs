@@ -75,5 +75,15 @@ namespace Features.Client
 
             return (items, totalCount);
         }
+
+        public async Task<List<string>> GetDistinctGendersAsync()
+        {
+            return await _db.Customers
+                .Where(c => !string.IsNullOrEmpty(c.CustGender))
+                .Select(c => c.CustGender)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToListAsync();
+        }
     }
 } 

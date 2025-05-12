@@ -1,4 +1,3 @@
-@using Features.Client
 @using global::Features.Client
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
@@ -25,7 +24,23 @@
                 <PropertyColumn Property="x => x.CustId" Title="Id" Sortable="true" />
                 <PropertyColumn Property="x => x.CustFirstName" Title="First Name" Sortable="true" />
                 <PropertyColumn Property="x => x.CustLastName" Title="Last Name" Sortable="true" />
-                <PropertyColumn Property="x => x.CustGender" Title="Gender" Sortable="true" />
+                <TemplateColumn Title="Gender" Property="x => x.CustGender">
+                    <HeaderTemplate>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                            <MudText Typo="Typo.subtitle2">Gender</MudText>
+                            <MudSelect T="string" @bind-Value="selectedGender" Dense="true" Placeholder="Gender" Style="min-width: 100px;">
+                                <MudSelectItem T="string" Value="@(string.Empty)">All</MudSelectItem>
+                                @foreach (var gender in genderOptions)
+                                {
+                                    <MudSelectItem T="string" Value="@gender">@gender</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                    </HeaderTemplate>
+                    <CellTemplate>
+                        @context.Item.CustGender
+                    </CellTemplate>
+                </TemplateColumn>
                 <PropertyColumn Property="x => x.CustYearOfBirth" Title="Year of Birth" Sortable="true" />
                 <PropertyColumn Property="x => x.CustMaritalStatus" Title="Marital Status" Sortable="true" />
                 <PropertyColumn Property="x => x.CustCity" Title="City" Sortable="true" />
@@ -48,6 +63,26 @@
     private string searchTerm = string.Empty;
     private bool loading = false;
     private MudDataGrid<ClientDto> dataGridRef;
+
+    private List<string> genderOptions = new();
+    private string _selectedGender = string.Empty;
+    private string selectedGender
+    {
+        get => _selectedGender;
+        set
+        {
+            if (_selectedGender != value)
+            {
+                _selectedGender = value;
+                _ = ReloadData();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        genderOptions = await ClientService.GetDistinctGendersAsync();
+    }
 
     private async Task<GridData<ClientDto>> LoadServerData(GridState<ClientDto> state)
     {
@@ -83,6 +118,10 @@
             sortDesc = firstSort.Descending;
         }
         var filters = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(selectedGender))
+        {
+            filters["CustGender"] = selectedGender;
+        }
         var result = await ClientService.GetClientsAsync(state.Page + 1, state.PageSize, searchTerm, sort, sortDesc, filters);
         loading = false;
         return new GridData<ClientDto> { Items = result.Items.ToList(), TotalItems = result.TotalCount };
@@ -96,6 +135,14 @@
     private async Task OnSearchKeyDown(KeyboardEventArgs args)
     {
         if (args.Key == "Enter" && dataGridRef != null)
+        {
+            await dataGridRef.ReloadServerData();
+        }
+    }
+
+    private async Task ReloadData()
+    {
+        if (dataGridRef != null)
         {
             await dataGridRef.ReloadServerData();
         }
