@@ -1,14 +1,17 @@
 @using global::Features.Client
 @using Microsoft.AspNetCore.Components.Web
 @using MudBlazor
+@using System.Timers
+@implements IDisposable
 @page "/clients"
 @inject ClientService ClientService
 @inject NavigationManager Navigation
+@inject MudBlazor.ISnackbar Snackbar
 
 <MudPaper Class="pa-4">
     <MudText Typo="Typo.h4" Class="mb-4">Clients</MudText>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/clients/edit/new"))">New Client</MudButton>
-    <MudTextField @bind-Value="searchTerm" Placeholder="Search..." Class="mb-4 mt-4" Immediate="true" OnKeyDown="OnSearchKeyDown" />
+    <MudTextField @bind-Value="SearchTerm" Placeholder="Search..." Class="mb-4 mt-4" DebounceInterval="300" />
     <div class="always-show-scrollbar">
         <MudDataGrid @ref="dataGridRef"
                      T="ClientDto"
@@ -24,11 +27,16 @@
                 <PropertyColumn Property="x => x.CustId" Title="Id" Sortable="true" />
                 <PropertyColumn Property="x => x.CustFirstName" Title="First Name" Sortable="true" />
                 <PropertyColumn Property="x => x.CustLastName" Title="Last Name" Sortable="true" />
-                <TemplateColumn Title="Gender" Property="x => x.CustGender">
+                <TemplateColumn Title="Gender">
                     <HeaderTemplate>
                         <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
                             <MudText Typo="Typo.subtitle2">Gender</MudText>
-                            <MudSelect T="string" @bind-Value="selectedGender" Dense="true" Placeholder="Gender" Style="min-width: 100px;">
+                            <MudSelect T="string"
+                                       Value="_selectedGender"
+                                       ValueChanged="@((string s) => OnGenderChanged(s))"
+                                       Dense="true"
+                                       Placeholder="Gender"
+                                       Style="min-width: 100px;">
                                 <MudSelectItem T="string" Value="@(string.Empty)">All</MudSelectItem>
                                 @foreach (var gender in genderOptions)
                                 {
@@ -60,28 +68,52 @@
 </MudPaper>
 
 @code {
-    private string searchTerm = string.Empty;
     private bool loading = false;
     private MudDataGrid<ClientDto> dataGridRef;
+    private Timer _debounceTimer;
 
     private List<string> genderOptions = new();
     private string _selectedGender = string.Empty;
-    private string selectedGender
-    {
-        get => _selectedGender;
-        set
-        {
-            if (_selectedGender != value)
-            {
-                _selectedGender = value;
-                _ = ReloadData();
-            }
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {
-        genderOptions = await ClientService.GetDistinctGendersAsync();
+        try
+        {
+            genderOptions = await ClientService.GetGenderOptionsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load gender options: {ex.Message}", MudBlazor.Severity.Error);
+            genderOptions = new List<string>();
+        }
+    }
+
+    // Add OnAfterRender to set up search term value changed handler
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Set up debounce for search term changes
+            PropertyChanged += OnSearchTermChanged;
+        }
+    }
+
+    private event Action<string, string> PropertyChanged;
+
+    // Property interceptor for searchTerm
+    private string _searchTerm = string.Empty;
+    public string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (_searchTerm != value)
+            {
+                var oldValue = _searchTerm;
+                _searchTerm = value;
+                PropertyChanged?.Invoke(nameof(SearchTerm), oldValue);
+            }
+        }
     }
 
     private async Task<GridData<ClientDto>> LoadServerData(GridState<ClientDto> state)
@@ -118,11 +150,11 @@
             sortDesc = firstSort.Descending;
         }
         var filters = new Dictionary<string, string>();
-        if (!string.IsNullOrWhiteSpace(selectedGender))
+        if (!string.IsNullOrWhiteSpace(_selectedGender))
         {
-            filters["CustGender"] = selectedGender;
+            filters["CustGender"] = _selectedGender;
         }
-        var result = await ClientService.GetClientsAsync(state.Page + 1, state.PageSize, searchTerm, sort, sortDesc, filters);
+        var result = await ClientService.GetClientsAsync(state.Page + 1, state.PageSize, SearchTerm, sort, sortDesc, filters);
         loading = false;
         return new GridData<ClientDto> { Items = result.Items.ToList(), TotalItems = result.TotalCount };
     }
@@ -132,11 +164,29 @@
         Navigation.NavigateTo($"/clients/edit/{args.Item.CustId}");
     }
 
-    private async Task OnSearchKeyDown(KeyboardEventArgs args)
+    private void OnSearchTermChanged(string propertyName, string oldValue)
     {
-        if (args.Key == "Enter" && dataGridRef != null)
+        if (propertyName == nameof(SearchTerm) && SearchTerm != oldValue)
         {
-            await dataGridRef.ReloadServerData();
+            // Use debouncing to avoid too many requests
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(300);
+            _debounceTimer.Elapsed += async (sender, e) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (dataGridRef != null)
+                    {
+                        // Reset to first page when searching
+                        dataGridRef.CurrentPage = 0;
+                        await dataGridRef.ReloadServerData();
+                        StateHasChanged();
+                    }
+                });
+                _debounceTimer.Dispose();
+            };
+            _debounceTimer.AutoReset = false;
+            _debounceTimer.Start();
         }
     }
 
@@ -146,5 +196,37 @@
         {
             await dataGridRef.ReloadServerData();
         }
+    }
+
+    private void OnGenderChanged(string value)
+    {
+        if (_selectedGender != value)
+        {
+            _selectedGender = value;
+            // Use debouncing to avoid too many requests
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(300);
+            _debounceTimer.Elapsed += async (sender, e) =>
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (dataGridRef != null)
+                    {
+                        // Reset to first page when filtering
+                        dataGridRef.CurrentPage = 0;
+                        await dataGridRef.ReloadServerData();
+                        StateHasChanged();
+                    }
+                });
+                _debounceTimer.Dispose();
+            };
+            _debounceTimer.AutoReset = false;
+            _debounceTimer.Start();
+        }
+    }
+    
+    public void Dispose()
+    {
+        _debounceTimer?.Dispose();
     }
 } 
