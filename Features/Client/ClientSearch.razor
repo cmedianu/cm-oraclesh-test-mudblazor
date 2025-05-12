@@ -10,7 +10,7 @@
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/clients/edit/new"))">New Client</MudButton>
     <MudTextField @bind-Value="searchTerm" Placeholder="Search..." Class="mb-4 mt-4" Immediate="true" />
     <div class="always-show-scrollbar">
-        <MudTable ServerData="@(LoadServerData)" SortLabel="Sort by" PageSizeOptions="new int[] { 10, 20, 50 }" TotalItems="totalItems" Class="mt-4" Hover="true">
+        <MudTable ServerData="@(LoadServerData)" SortLabel="Sort by" pageSizeOptions="new int[] { 10, 20, 50 }" TotalItems="totalItems" Class="mt-4" Hover="true">
             <HeaderContent>
                 <MudTh>Id</MudTh>
                 <MudTh>First Name</MudTh>

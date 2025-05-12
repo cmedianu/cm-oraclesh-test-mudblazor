@@ -33,7 +33,19 @@ namespace Data.Context
                 Assert.NotEmpty(customers);
             }
         }
-
+        
+        /*[Fact]
+        public void SelectAllCustomers()
+        {
+            var options = GetOracleOptions();
+            using (var context = new AppDbContext(options))
+            {
+                var customers = context.Customers.ToList();
+                Assert.NotEmpty(customers);
+                // print the number of customers
+                Console.WriteLine($"Number of customers: {customers.Count}");
+            }
+        }*/
         [Fact]
         public void CanSelectCountries()
         {
