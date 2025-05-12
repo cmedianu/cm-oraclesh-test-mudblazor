@@ -1,0 +1,68 @@
+@using Features.Client
+@using global::Features.Client
+@using MudBlazor
+@page "/clients"
+@inject ClientService ClientService
+@inject NavigationManager Navigation
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Clients</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/clients/edit/new"))">New Client</MudButton>
+    <MudTextField @bind-Value="searchTerm" Placeholder="Search..." Class="mb-4 mt-4" Immediate="true" />
+    <MudTable ServerData="@(LoadServerData)" SortLabel="Sort by" PageSizeOptions="new int[] { 10, 20, 50 }" TotalItems="totalItems" Class="mt-4" Hover="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>First Name</MudTh>
+            <MudTh>Last Name</MudTh>
+            <MudTh>Gender</MudTh>
+            <MudTh>Year of Birth</MudTh>
+            <MudTh>Marital Status</MudTh>
+            <MudTh>City</MudTh>
+            <MudTh>State/Province</MudTh>
+            <MudTh>Country</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Phone</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.CustId</MudTd>
+            <MudTd DataLabel="First Name">@context.CustFirstName</MudTd>
+            <MudTd DataLabel="Last Name">@context.CustLastName</MudTd>
+            <MudTd DataLabel="Gender">@context.CustGender</MudTd>
+            <MudTd DataLabel="Year of Birth">@context.CustYearOfBirth</MudTd>
+            <MudTd DataLabel="Marital Status">@context.CustMaritalStatus</MudTd>
+            <MudTd DataLabel="City">@context.CustCity</MudTd>
+            <MudTd DataLabel="State/Province">@context.CustStateProvince</MudTd>
+            <MudTd DataLabel="Country">@context.CountryName</MudTd>
+            <MudTd DataLabel="Email">@context.CustEmail</MudTd>
+            <MudTd DataLabel="Phone">@context.CustMainPhoneNumber</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<ClientDto> pagedClients = new();
+    private int totalItems;
+    private int pageSize = 10;
+    private int currentPage = 0;
+    private bool loading = false;
+    private string searchTerm = string.Empty;
+
+    //TODO Do something with the token
+    private async Task<TableData<ClientDto>> LoadServerData(TableState state, CancellationToken token)
+    {
+        loading = true;
+        var sort = state.SortLabel ?? "CustId";
+        var sortDesc = state.SortDirection == SortDirection.Descending;
+        var filters = new Dictionary<string, string>();
+        var result = await ClientService.GetClientsAsync(state.Page + 1, state.PageSize, searchTerm, sort, sortDesc, filters);
+        pagedClients = result.Items.ToList();
+        totalItems = result.TotalCount;
+        loading = false;
+        return new TableData<ClientDto> { Items = pagedClients, TotalItems = totalItems };
+    }
+
+    private void OnRowClick(TableRowClickEventArgs<ClientDto> args)
+    {
+        Navigation.NavigateTo($"/clients/edit/{args.Item.CustId}");
+    }
+} 

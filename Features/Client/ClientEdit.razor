@@ -1,0 +1,16 @@
+@using Features.Client
+@using MudBlazor
+@page "/clients/edit/{id}"
+@page "/clients/edit/new"
+@inject NavigationManager Navigation
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h4">Client Edit</MudText>
+    <MudText Typo="Typo.subtitle1" Class="mt-2">This page is under construction. Edit and create functionality will be implemented in a future task.</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-4" OnClick="@(() => Navigation.NavigateTo("/clients"))">Back to Clients</MudButton>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+} 

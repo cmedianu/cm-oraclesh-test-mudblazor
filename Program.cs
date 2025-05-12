@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using AutoMapper;
 
 //using SH.Data;
 
@@ -22,6 +23,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddAutoMapper(typeof(Features.Client.ClientProfile));
+builder.Services.AddScoped<Features.Client.ClientService>();
 
 var app = builder.Build();
 

@@ -90,7 +90,7 @@ Generate the application **one step at a time**, in the following **dependency-a
 - Filtering/sorting only where sensible.
 - No use of generic repository for Sales.
 - Connection strings go in `appsettings.json` as placeholders.
-
+- always run `dotnet outdated -u` after adding a new package.
 ---
 
 ## 🔐 Oracle-Inspector Integration
