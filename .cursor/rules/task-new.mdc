@@ -7,3 +7,6 @@ alwaysApply: false
 - create a specification for the task below and save it in ./specs in a file named <Number>-<the-topic-name>.md. we are aiming to number tasks 10,20, etc. 
 - *Do not execute the specification*, just create the md in ./specs
 - If task not described in initial Project specification, ask User if they want to add it there.
+- at the end of he minispec say that 
+    - project should be clean built at the end of the implementation and compile errors fixed.
+    - Any missing NuGet packages should be installed
