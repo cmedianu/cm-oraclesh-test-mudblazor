@@ -1,16 +1,167 @@
 @using Features.Client
 @using MudBlazor
+@using FluentValidation
+@using Microsoft.AspNetCore.Components.Forms
+@using Blazored.FluentValidation
+
+@namespace Features.Client
+
+@inject NavigationManager Navigation
+@inject ClientService ClientService
+@inject ISnackbar Snackbar
+
 @page "/clients/edit/{id}"
 @page "/clients/edit/new"
-@inject NavigationManager Navigation
 
 <MudPaper Class="pa-4">
-    <MudText Typo="Typo.h4">Client Edit</MudText>
-    <MudText Typo="Typo.subtitle1" Class="mt-2">This page is under construction. Edit and create functionality will be implemented in a future task.</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-4" OnClick="@(() => Navigation.NavigateTo("/clients"))">Back to Clients</MudButton>
+    <MudText Typo="Typo.h4">@((IsNew ? "Create" : "Edit") + " Customer")</MudText>
+    <MudText Typo="Typo.subtitle2" Class="mb-2">[DEBUG] id param: @id</MudText>
+    <EditForm Model="client" OnValidSubmit="HandleValidSubmit">
+        <MudGrid Class="mt-4">
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustFirstName" Label="First Name" For="() => client.CustFirstName" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustLastName" Label="Last Name" For="() => client.CustLastName" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string" @bind-Value="client.CustGender" Label="Gender" Required="true">
+                    @foreach (var gender in genderOptions)
+                    {
+                        <MudSelectItem T="string" Value="@gender">@gender</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="decimal?" @bind-Value="client.CustYearOfBirth" Label="Year of Birth" For="() => client.CustYearOfBirth" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string" @bind-Value="client.CustMaritalStatus" Label="Marital Status" Required="true">
+                    @foreach (var status in maritalStatusOptions)
+                    {
+                        <MudSelectItem T="string" Value="@status">@status</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustCity" Label="City" For="() => client.CustCity" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string" @bind-Value="client.CustStateProvince" Label="State/Province" Required="true">
+                    @foreach (var state in stateProvinceOptions)
+                    {
+                        <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="decimal?" @bind-Value="client.CountryId" Label="Country" Required="true">
+                    @foreach (var country in countryOptions)
+                    {
+                        <MudSelectItem T="decimal?" Value="@country.CountryId">@country.CountryName</MudSelectItem>
+                    }
+                </MudSelect>
+                <!-- TODO: Replace with code table in future -->
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustEmail" Label="Email" For="() => client.CustEmail" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustMainPhoneNumber" Label="Main Phone Number" For="() => client.CustMainPhoneNumber" Required="true" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="client.CustStreetAddress" Label="Street Address" For="() => client.CustStreetAddress" Required="true" />
+            </MudItem>
+        </MudGrid>
+        <MudStack Row Class="mt-4" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Save</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="OnCancel">Cancel</MudButton>
+        </MudStack>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <MudAlert Severity="MudBlazor.Severity.Error" Class="mt-2">@errorMessage</MudAlert>
+        }
+    </EditForm>
 </MudPaper>
 
 @code {
     [Parameter]
     public string id { get; set; }
+
+    private ClientDto client = new();
+    private List<string> genderOptions = new();
+    private List<string> maritalStatusOptions = new();
+    private List<string> stateProvinceOptions = new();
+    private List<(decimal CountryId, string CountryName)> countryOptions = new();
+    private string errorMessage;
+    private bool IsNew => string.IsNullOrWhiteSpace(id) || string.Equals(id, "new", StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDropdowns();
+        if (!IsNew)
+        {
+            if (decimal.TryParse(id, out var custId))
+            {
+                var loaded = await ClientService.GetClientByIdAsync(custId);
+                if (loaded != null)
+                {
+                    client = loaded;
+                }
+                else
+                {
+                    errorMessage = "Customer not found.";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid customer ID.";
+            }
+        }
+    }
+
+    private async Task LoadDropdowns()
+    {
+        genderOptions = await ClientService.GetGenderOptionsAsync();
+        maritalStatusOptions = await ClientService.GetMaritalStatusOptionsAsync();
+        stateProvinceOptions = await ClientService.GetStateProvinceOptionsAsync();
+        countryOptions = await ClientService.GetCountryOptionsAsync();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        errorMessage = null;
+        try
+        {
+            if (IsNew)
+            {
+                client.CustId = null;
+                var newId = await ClientService.CreateClientAsync(client);
+                Snackbar.Add("Customer created successfully!", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                var updated = await ClientService.UpdateClientAsync(client);
+                if (updated)
+                {
+                    Snackbar.Add("Customer updated successfully!", MudBlazor.Severity.Success);
+                }
+                else
+                {
+                    errorMessage = "Failed to update customer.";
+                    return;
+                }
+            }
+            Navigation.NavigateTo("/clients");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private void OnCancel()
+    {
+        Navigation.NavigateTo("/clients");
+    }
 } 

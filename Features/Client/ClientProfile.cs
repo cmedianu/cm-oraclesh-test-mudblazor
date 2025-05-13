@@ -8,7 +8,7 @@ namespace Features.Client
         public ClientProfile()
         {
             CreateMap<Customer, ClientDto>()
-                .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country != null ? src.Country.CountryName : null));
+                .ReverseMap();
         }
     }
 } 

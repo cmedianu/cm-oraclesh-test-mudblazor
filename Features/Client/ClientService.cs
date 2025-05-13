@@ -112,5 +112,68 @@ namespace Features.Client
                 .OrderBy(g => g)
                 .ToListAsync();
         }
+
+        public async Task<List<string>> GetMaritalStatusOptionsAsync()
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            return await db.Customers
+                .Where(c => !string.IsNullOrEmpty(c.CustMaritalStatus))
+                .Select(c => c.CustMaritalStatus)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> GetStateProvinceOptionsAsync()
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            return await db.Customers
+                .Where(c => !string.IsNullOrEmpty(c.CustStateProvince))
+                .Select(c => c.CustStateProvince)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToListAsync();
+        }
+
+        public async Task<List<(decimal CountryId, string CountryName)>> GetCountryOptionsAsync()
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            return (await db.Countries
+                .Select(c => new { c.CountryId, c.CountryName })
+                .OrderBy(c => c.CountryName)
+                .ToListAsync())
+                .Select(c => (c.CountryId, c.CountryName))
+                .ToList();
+        }
+
+        public async Task<ClientDto> GetClientByIdAsync(decimal id)
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            var entity = await db.Customers.Include(c => c.Country).FirstOrDefaultAsync(c => c.CustId == id);
+            return entity == null ? null : _mapper.Map<ClientDto>(entity);
+        }
+
+        public async Task<bool> UpdateClientAsync(ClientDto dto)
+        {
+            if (dto.CustId == null)
+                return false;
+            using var db = await _dbFactory.CreateDbContextAsync();
+            var entity = await db.Customers.FirstOrDefaultAsync(c => c.CustId == dto.CustId);
+            if (entity == null) return false;
+            _mapper.Map(dto, entity);
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<decimal> CreateClientAsync(ClientDto dto)
+        {
+            using var db = await _dbFactory.CreateDbContextAsync();
+            var entity = _mapper.Map<Data.Entities.Customer>(dto);
+            // Ensure CustId is not set for new entities
+            entity.CustId = default;
+            db.Customers.Add(entity);
+            await db.SaveChangesAsync();
+            return entity.CustId;
+        }
     }
 } 

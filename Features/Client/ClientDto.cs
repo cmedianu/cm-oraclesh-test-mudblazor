@@ -2,7 +2,7 @@ namespace Features.Client
 {
     public class ClientDto
     {
-        public decimal CustId { get; set; }
+        public decimal? CustId { get; set; }
         public string CustFirstName { get; set; }
         public string CustLastName { get; set; }
         public string CustGender { get; set; }
@@ -13,5 +13,7 @@ namespace Features.Client
         public string CountryName { get; set; }
         public string CustEmail { get; set; }
         public string CustMainPhoneNumber { get; set; }
+        public decimal? CountryId { get; set; }
+        public string CustStreetAddress { get; set; }
     }
 } 
