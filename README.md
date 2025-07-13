@@ -47,14 +47,22 @@ https://github.com/oracle-samples/db-sample-schemas/tree/main/sales_history
 
 ## Architecture
 
-The application follows a **feature-based architecture** where related functionality is grouped together rather than separated by technical layers. Each feature contains its own DTOs, services, validators, and Razor components.
+The application uses **feature-based architecture** instead of traditional layered architecture. Rather than organizing code by technical layers (Controllers, Services, Repositories), functionality is grouped by business features.
 
-Key patterns:
-- Service layer for business logic
-- Repository pattern via Entity Framework
-- DTO pattern with AutoMapper
-- Component-based UI with MudBlazor
-- Dependency injection throughout
+### Feature-Based Organization
+Each business feature (Client, Country) is contained within its own folder in `/Features` and includes:
+- **DTOs** - Data transfer objects for the feature
+- **Services** - Business logic and data operations
+- **Validators** - FluentValidation rules
+- **Razor Components** - UI components for the feature
+- **AutoMapper Profiles** - Object mapping configurations
+
+### Key Patterns
+- **IDbContextFactory pattern** - Thread-safe database operations
+- **Service layer pattern** - Business logic encapsulation
+- **DTO pattern with AutoMapper** - Clean separation between entities and presentation
+- **Component-based UI** - MudBlazor Razor components
+- **Dependency injection** - Throughout the application
 
 ## Features
 
