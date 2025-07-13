@@ -1,0 +1,55 @@
+@namespace Features.Country
+@using MudBlazor
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+
+@page "/countries/edit/{CountryId:decimal}"
+@inject CountryService CountryService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Country</PageTitle>
+
+<EditForm Model="country" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <MudPaper Class="pa-4">
+        <MudTextField @bind-Value="country.CountryName" Label="Country Name" For="() => country.CountryName" Required="true" />
+        <MudTextField @bind-Value="country.CountryIsoCode" Label="ISO Code" For="() => country.CountryIsoCode" Required="true" />
+        <MudTextField @bind-Value="country.CountryRegion" Label="Region" For="() => country.CountryRegion" />
+        <MudTextField @bind-Value="country.CountrySubregion" Label="Subregion" For="() => country.CountrySubregion" />
+        <MudTextField @bind-Value="country.CountryTotal" Label="Total" For="() => country.CountryTotal" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Save</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="GoBack">Cancel</MudButton>
+    </MudPaper>
+</EditForm>
+
+@code {
+    [Parameter] public decimal CountryId { get; set; }
+    private CountryDto country = new();
+    private CountryValidator validator = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CountryId != 0)
+        {
+            var existing = await CountryService.GetByIdAsync(CountryId);
+            if (existing != null)
+                country = existing;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (CountryId == 0)
+            await CountryService.CreateAsync(country);
+        else
+            await CountryService.UpdateAsync(country);
+        Navigation.NavigateTo("/countries");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/countries");
+    }
+} 

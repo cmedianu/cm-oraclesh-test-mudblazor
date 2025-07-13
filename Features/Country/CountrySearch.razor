@@ -1,0 +1,71 @@
+@namespace Features.Country
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Forms
+@using Blazored.FluentValidation
+@using Microsoft.AspNetCore.Components.Web
+
+@page "/countries"
+@inject CountryService CountryService
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+
+<PageTitle>Countries</PageTitle>
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Countries</MudText>
+    <MudTable Items="countries" Hover="true" Bordered="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>ISO Code</MudTh>
+            <MudTh>Region</MudTh>
+            <MudTh>Subregion</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.CountryId</MudTd>
+            <MudTd DataLabel="Name">@context.CountryName</MudTd>
+            <MudTd DataLabel="ISO Code">@context.CountryIsoCode</MudTd>
+            <MudTd DataLabel="Region">@context.CountryRegion</MudTd>
+            <MudTd DataLabel="Subregion">@context.CountrySubregion</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => EditCountry(context.CountryId)">Edit</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="() => DeleteCountry(context.CountryId)">Delete</MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="CreateCountry">Add Country</MudButton>
+</MudPaper>
+
+@code {
+    private List<CountryDto> countries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        countries = await CountryService.GetAllAsync();
+    }
+
+    private void EditCountry(decimal id)
+    {
+        Navigation.NavigateTo($"/countries/edit/{id}");
+    }
+
+    private void CreateCountry()
+    {
+        Navigation.NavigateTo("/countries/edit/0");
+    }
+
+    private async Task DeleteCountry(decimal id)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            "Are you sure you want to delete this country?",
+            yesText: "Yes", noText: "No");
+        if (confirmed == true)
+        {
+            await CountryService.DeleteAsync(id);
+            countries = await CountryService.GetAllAsync();
+            StateHasChanged();
+        }
+    }
+} 

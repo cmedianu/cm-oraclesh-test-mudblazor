@@ -19,15 +19,16 @@ builder.Services.AddMudServices();
 
 // Add Entity Framework Core services
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("OracleSH"),
+    options.UseOracle(builder.Configuration.GetConnectionString(builder.Configuration.GetConnectionString("ConnectionName")),
     providerOptions => providerOptions.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19).UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddAutoMapper(typeof(Features.Client.ClientProfile));
+builder.Services.AddAutoMapper(typeof(Features.Client.ClientProfile), typeof(Features.Country.CountryProfile));
 builder.Services.AddScoped<Features.Client.ClientService>();
+builder.Services.AddScoped<Features.Country.CountryService>();
 
 // Ensure ./logs directory exists
 var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
