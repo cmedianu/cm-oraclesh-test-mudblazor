@@ -1,4 +1,4 @@
-# CM-SH-MudBlazor
+# CM-OracleSH-Test-MudBlazor
 
 This is an experimental Blazor Server application for exploring modern web architecture patterns using MudBlazor components and Oracle database connectivity.
 

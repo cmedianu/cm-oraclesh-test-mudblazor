@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SH</RootNamespace>
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
-    <UserSecretsId>cm-sh-mudblazor-9482985</UserSecretsId>
+    <UserSecretsId>cm-oraclesh-test-mudblazor-9482985</UserSecretsId>
   </PropertyGroup>
 
 

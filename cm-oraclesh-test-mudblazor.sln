@@ -2,7 +2,7 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cm-sh-mudblazor", "cm-sh-mudblazor.csproj", "{93B7DEEF-DE02-3984-6767-83F45BBEDB84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cm-oraclesh-test-mudblazor", "cm-oraclesh-test-mudblazor.csproj", "{93B7DEEF-DE02-3984-6767-83F45BBEDB84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
