@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using AutoMapper;
 using Serilog;
 using System.IO;
+using Oracle.ManagedDataAccess.Client;
 
 //using SH.Data;
 
@@ -20,7 +21,8 @@ builder.Services.AddMudServices();
 // Add Entity Framework Core services
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString(builder.Configuration.GetConnectionString("ConnectionName")),
-    providerOptions => providerOptions.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19).UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+    providerOptions => providerOptions.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19).UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+    ));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

@@ -1,11 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Data.Entities;
 
 namespace Data.Context
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        private readonly IConfiguration? _configuration;
+
+        public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration? configuration = null) : base(options)
+        {
+            _configuration = configuration;
+        }
 
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Sale> Sales { get; set; }
@@ -13,6 +19,9 @@ namespace Data.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Set default schema from configuration, fallback to "SH" if not configured
+            var defaultSchema = _configuration?["DatabaseSettings:DefaultSchema"] ?? "SH";
+            modelBuilder.HasDefaultSchema(defaultSchema);
             // Customer -> Country
             modelBuilder.Entity<Customer>()
                 .HasOne(c => c.Country)

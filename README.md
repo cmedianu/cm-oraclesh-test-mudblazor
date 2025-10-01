@@ -39,6 +39,14 @@ https://github.com/oracle-samples/db-sample-schemas/tree/main/sales_history
    dotnet restore
    dotnet user-secrets set "ConnectionStrings:OracleSH" "your-oracle-connection-string"
    ```
+Secrets are stored in:
+- Windows: %APPDATA%\Microsoft\UserSecrets\\\<userSecretsId>\secrets.json
+- Linux/macOS: ~/.microsoft/usersecrets/<userSecretsId>/secrets.json
+
+For Oracle Cloud, or mutual TLS authentication, you would use something like:
+```
+ dotnet user-secrets set "ConnectionStrings:OracleSH"  "User Id=user;Password=***;Data Source=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.ca-toronto-1.oraclecloud.com))(connect_data=(service_name=instancename.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)));Wallet_Location=C:\\oracle\\oracloud"
+```
 
 3. **Run**
    ```bash
