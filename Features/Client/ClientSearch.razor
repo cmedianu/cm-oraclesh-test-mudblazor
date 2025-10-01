@@ -168,7 +168,9 @@
     {
         if (propertyName == nameof(SearchTerm) && SearchTerm != oldValue)
         {
-            // Use debouncing to avoid too many requests
+            // Debouncing: Delay search execution until user pauses typing for 300ms
+            // This prevents excessive database queries during rapid user input
+            // Old timer is disposed, effectively cancelling any pending search
             _debounceTimer?.Dispose();
             _debounceTimer = new Timer(300);
             _debounceTimer.Elapsed += async (sender, e) =>
@@ -179,6 +181,9 @@
                     {
                         // Reset to first page when searching
                         dataGridRef.CurrentPage = 0;
+                        // This triggers ServerData callback which calls ClientService.GetClientsAsync
+                        // Note: If previous queries are still in-flight, they will complete harmlessly
+                        // The UI only displays results from the most recent ReloadServerData call
                         await dataGridRef.ReloadServerData();
                         StateHasChanged();
                     }

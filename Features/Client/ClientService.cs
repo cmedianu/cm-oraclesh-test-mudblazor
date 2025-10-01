@@ -14,7 +14,6 @@ namespace Features.Client
     {
         private readonly IDbContextFactory<AppDbContext> _dbFactory;
         private readonly IMapper _mapper;
-        private CancellationTokenSource _cts = new CancellationTokenSource();
 
         public ClientService(IDbContextFactory<AppDbContext> dbFactory, IMapper mapper)
         {
@@ -25,14 +24,9 @@ namespace Features.Client
         public async Task<(IEnumerable<ClientDto> Items, int TotalCount)>
             GetClientsAsync(int page, int pageSize, string search, string sortColumn, bool sortDesc, Dictionary<string, string> filters)
         {
-            // Cancel any previous operations
-            _cts.Cancel();
-            _cts = new CancellationTokenSource();
-            var token = _cts.Token;
-
             try
             {
-                using var db = await _dbFactory.CreateDbContextAsync(token);
+                using var db = await _dbFactory.CreateDbContextAsync();
 
                 var query = db.Customers.Include(c => c.Country).AsQueryable();
 
@@ -79,14 +73,14 @@ namespace Features.Client
 
                 // Execute the count and data queries in one database round trip
                 var countQuery = query;
-                var totalCount = await countQuery.CountAsync(token);
+                var totalCount = await countQuery.CountAsync();
 
                 var dataQuery = query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ProjectTo<ClientDto>(_mapper.ConfigurationProvider);
 
-                var items = await dataQuery.ToListAsync(token);
+                var items = await dataQuery.ToListAsync();
 
                 return (items, totalCount);
             }
